@@ -9,8 +9,9 @@ public class EnemyAI : MonoBehaviour {
     [HideInInspector] public AlertState alertState;
     [HideInInspector] public AttackState attackState;
     [HideInInspector] public IEnemyState currentState;
-
     [HideInInspector] public NavMeshAgent navMeshAgent;
+    [HideInInspector] public GameObject[] totalDecals;
+    [HideInInspector] public int actual_decal = 0;
 
     public Light myLight;
     public float life = 100;
@@ -19,10 +20,12 @@ public class EnemyAI : MonoBehaviour {
     public float rotationTime = 3.0f;
     public float shootHeight = 0.5f;
     public Transform[] wayPoints;
-
+    public GameObject decalPrefab;
+    public AudioSource fireAudio;
 
     // Use this for initialization
     void Start () {
+        totalDecals = new GameObject[10];
         patrolState = new PatrolState(this);
         alertState = new AlertState(this);
         attackState = new AttackState(this);
@@ -43,7 +46,11 @@ public class EnemyAI : MonoBehaviour {
     {
         life -= damage;
         currentState.Impact();
-        Debug.Log("Enemy hitted: " + life);
+    }
+
+    public void DestroyQuad()
+    {
+        Destroy(totalDecals[actual_decal]);
     }
 
     private void OnTriggerEnter(Collider other)

@@ -12,19 +12,11 @@ public class Shooter : MonoBehaviour
     public float damageForce = 10f;
     public Text cartridgeTxt;
     public Text totalAmmunitionTxt;
-    public Text shieldTxt;
-    public Text lifeTxt;
-    public Slider shieldSlider;
-    public Slider lifeSlider;
-
-    float life = 150;
-    float shield = 5;
+    
     int totalAmmunition = 120;
     int cartridgeAmmo = 30;
 
     int maxAmmunition = 990;
-    float maxLife = 150;
-    float maxShield = 150;
 
     GameObject[] totalDecals;
     int actual_decal = 0;
@@ -34,10 +26,6 @@ public class Shooter : MonoBehaviour
     {
         cartridgeTxt.text = cartridgeAmmo.ToString();
         totalAmmunitionTxt.text = totalAmmunition.ToString();
-        shieldTxt.text = shield.ToString();
-        lifeTxt.text = life.ToString();
-        shieldSlider.value = shield;
-        lifeSlider.value = life;
     }
 
     private void Start()
@@ -75,63 +63,7 @@ public class Shooter : MonoBehaviour
             Reload();
         }
     }
-
-
-    public void Hit(float damage)
-    {
-        if (shield > 0)
-        {
-            shield -= damage;
-
-            if (shield < 0)
-            {
-                life += shield;
-                shield = 0;
-            }
-            shieldSlider.value = shield;
-            lifeSlider.value = life;
-
-            shieldTxt.text = shield.ToString();
-            lifeTxt.text = life.ToString();
-        }
-        else
-        {
-            life -= damage;
-            if (life < 0) life = 0;
-            lifeSlider.value = life;
-            lifeTxt.text = life.ToString();
-        }
-
-    }
-
-    #region ITEMS
-    //If life or ammo are already at his maximum, do not get the items
-    public bool AddLife(float lifePlus)
-    {
-        bool useItem = false;
-        if (life < maxLife)
-        {
-            useItem = true;
-            life += lifePlus;
-            lifeSlider.value = life;
-            lifeTxt.text = life.ToString();
-        }
-        return useItem;
-    }
-
-    public bool AddShield(float shieldPlus)
-    {
-        bool useItem = false;
-        if (shield < maxShield)
-        {
-            useItem = true;
-            shield += shieldPlus;
-            shieldSlider.value = shield;
-            shieldTxt.text = shield.ToString();
-        }
-        return useItem;
-    }
-
+    
     public bool AddAmmo(int bullets)
     {
         bool useItem = false;
@@ -143,9 +75,8 @@ public class Shooter : MonoBehaviour
         }
         return useItem;
     }
-    #endregion
 
-    #region GUN
+    #region SHOOT && RELOAD
     void Shoot()
     {
         Fire();

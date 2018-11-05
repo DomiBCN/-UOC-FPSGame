@@ -9580,7 +9580,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.054, y: 0.5345856}
   m_AnchorMax: {x: 0.10862921, y: 0.81341445}
-  m_AnchoredPosition: {x: 0.8600006, y: 0.66200066}
+  m_AnchoredPosition: {x: 0.8600006, y: 0.66199875}
   m_SizeDelta: {x: -1.2900009, y: -1.3239002}
   m_Pivot: {x: 0, y: 0}
 --- !u!114 &978078925
@@ -18318,6 +18318,17 @@ MonoBehaviour:
   damageForce: 10
   cartridgeTxt: {fileID: 1615278630}
   totalAmmunitionTxt: {fileID: 220860748}
+--- !u!114 &1877018109
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1877018106}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9db654206f00af34c8de3b5bb0b625f6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
   shieldTxt: {fileID: 1613796166}
   lifeTxt: {fileID: 2144995459}
   shieldSlider: {fileID: 425446322}

@@ -50,7 +50,6 @@ public class PatrolState : IEnemyState
     {
         if (col.gameObject.tag == "Player")
         {
-            Debug.Log("Found!!");
             GoToAlertState();
         }
     }

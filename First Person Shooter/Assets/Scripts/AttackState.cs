@@ -46,9 +46,25 @@ public class AttackState : IEnemyState
 
         if (actualTimeBetweenShoots > myEnemy.timeBetweenShoots)
         {
-            Debug.Log("attackiiiing");
+            RaycastHit hit;
+
+            if (Physics.Raycast(new Ray(new Vector3(myEnemy.transform.position.x, 0.5f, myEnemy.transform.position.z), myEnemy.transform.forward * 100f), out hit))
+            {
+                myEnemy.fireAudio.Play();
+                if (hit.collider.gameObject.tag == "Player")
+                {
+                    col.gameObject.GetComponent<PlayerHealth>().Hit(myEnemy.damageForce);
+                }
+                else
+                {
+                    myEnemy.DestroyQuad();
+                    myEnemy.totalDecals[myEnemy.actual_decal] = GameObject.Instantiate(myEnemy.decalPrefab, hit.point + hit.normal * 0.01f, Quaternion.FromToRotation(Vector3.forward, -hit.normal), hit.collider.gameObject.transform);
+                    myEnemy.actual_decal++;
+                    if (myEnemy.actual_decal == 10) myEnemy.actual_decal = 0;
+                }
+            }
             actualTimeBetweenShoots = 0;
-            col.gameObject.GetComponent<Shooter>().Hit(myEnemy.damageForce);
+
         }
     }
 

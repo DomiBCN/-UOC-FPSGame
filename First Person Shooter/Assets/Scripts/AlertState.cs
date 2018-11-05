@@ -63,7 +63,6 @@ public class AlertState : IEnemyState
             {
                 if(hit.collider.gameObject.tag == "Player")
                 {
-                    //Debug.Log(hit.collider.name);
                     GoToAttackState();
                 }
             }
