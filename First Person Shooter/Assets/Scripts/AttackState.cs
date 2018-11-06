@@ -48,7 +48,7 @@ public class AttackState : IEnemyState
         {
             RaycastHit hit;
 
-            if (Physics.Raycast(new Ray(new Vector3(myEnemy.transform.position.x, 0.5f, myEnemy.transform.position.z), myEnemy.transform.forward * 100f), out hit))
+            if (Physics.Raycast(new Ray(new Vector3(myEnemy.transform.position.x, myEnemy.transform.position.y - 0.6f, myEnemy.transform.position.z), myEnemy.transform.forward * 100f), out hit))
             {
                 myEnemy.fireAudio.Play();
                 if (hit.collider.gameObject.tag == "Player")

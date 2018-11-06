@@ -35,7 +35,8 @@ public class AutomaticDoors : MonoBehaviour {
                 leftDoor.localPosition = Vector3.Lerp(leftDoor.localPosition, leftDoorOpened.localPosition, speed * Time.deltaTime);
                 rightDoor.localPosition = Vector3.Lerp(rightDoor.localPosition, rightDoorOpened.localPosition, speed * Time.deltaTime);
             }
-        }else if (isClosing)
+        }
+        else if (isClosing)
         {
             distance = leftDoor.localPosition - leftDoorClosed.localPosition;
 
