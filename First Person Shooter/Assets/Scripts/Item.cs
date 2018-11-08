@@ -5,6 +5,8 @@ using UnityEngine;
 public class Item : MonoBehaviour
 {
 
+    public ItemTypeEnum itemType;
+
     float rotationTime = 3f;
     bool itemUsed;
 
@@ -18,17 +20,19 @@ public class Item : MonoBehaviour
     {
         if (other.gameObject.tag == "Player")
         {
-            if (gameObject.tag == "Life")
+            switch (itemType)
             {
-                itemUsed = other.gameObject.GetComponent<PlayerHealth>().AddLife(30);
-            }
-            else if (gameObject.tag == "Shield")
-            {
-                itemUsed = other.gameObject.GetComponent<PlayerHealth>().AddShield(30);
-            }
-            else if (gameObject.tag == "Ammo")
-            {
-                itemUsed = other.gameObject.GetComponent<Shooter>().AddAmmo(60);
+                case ItemTypeEnum.LIFE:
+                    itemUsed = other.gameObject.GetComponent<PlayerHealth>().AddLife(30);
+                    break;
+                case ItemTypeEnum.SHIELD:
+                    itemUsed = other.gameObject.GetComponent<PlayerHealth>().AddShield(30);
+                    break;
+                case ItemTypeEnum.AMMO:
+                    itemUsed = other.gameObject.GetComponent<Shooter>().AddAmmo(60);
+                    break;
+                default:
+                    break;
             }
 
             //destroy the item just if it's been used

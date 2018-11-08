@@ -5,6 +5,7 @@ using UnityEngine.UI;
 
 public class Shooter : MonoBehaviour
 {
+    public Text reloadingTxt;
     public GameObject decalPrefab;
     public AudioSource gunAudioSource;
     public AudioClip fireSound;
@@ -12,11 +13,21 @@ public class Shooter : MonoBehaviour
     public float damageForce = 10f;
     public Text cartridgeTxt;
     public Text totalAmmunitionTxt;
-    
+    public Transform gunEnd;
+    public Transform shellEject;
+    public GameObject bulletPrefab;
+    public GameObject shellPrefab;
+
+    public ParticleSystem bulletImpact;
+
+
     int totalAmmunition = 120;
     int cartridgeAmmo = 30;
 
     int maxAmmunition = 990;
+    int cartridgeCapacity = 30;
+
+    float bulletSpread = 0.025f; //we will use it to add some inaccuracy to our aiming
 
     GameObject[] totalDecals;
     int actual_decal = 0;
@@ -36,34 +47,42 @@ public class Shooter : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetMouseButtonDown(0) && !reloading)
+        if (Input.GetMouseButtonDown(0) && cartridgeAmmo > 0)
         {
             RaycastHit hit;
-
-            if (Physics.Raycast(Camera.main.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0)), out hit))
+            Ray raySpread = Camera.main.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
+            //modify the direction using the bulletSpread factor
+            Vector3 bulletSpreadDirection = new Vector3(raySpread.direction.x + Random.Range(-bulletSpread, bulletSpread), raySpread.direction.y + Random.Range(-bulletSpread, bulletSpread), raySpread.direction.z);
+            raySpread.direction = bulletSpreadDirection;
+            Shoot(bulletSpreadDirection);
+            if (Physics.Raycast(raySpread, out hit))
             {
-                Destroy(totalDecals[actual_decal]);
-                totalDecals[actual_decal] = GameObject.Instantiate(decalPrefab, hit.point + hit.normal * 0.01f, Quaternion.FromToRotation(Vector3.forward, -hit.normal), hit.collider.gameObject.transform);
-
-                Shoot();
+                StartCoroutine(bulletImpactEffect(hit.point));
 
                 if (hit.collider.gameObject.tag == "Enemy")
                 {
                     hit.collider.gameObject.GetComponentInParent<EnemyAI>().Hit(damageForce);
                 }
-
-                actual_decal++;
-                if (actual_decal == 10) actual_decal = 0;
-
+                else
+                {
+                    Destroy(totalDecals[actual_decal]);
+                    totalDecals[actual_decal] = GameObject.Instantiate(decalPrefab, hit.point + hit.normal * 0.01f, Quaternion.FromToRotation(Vector3.forward, -hit.normal), hit.collider.gameObject.transform);
+                    actual_decal++;
+                    if (actual_decal == 10) actual_decal = 0;
+                }
             }
         }
+
         if (Input.GetKeyDown(KeyCode.R) && !reloading)
         {
-            reloading = true;
-            Reload();
+            if (totalAmmunition > 0 && cartridgeAmmo < cartridgeCapacity)
+            {
+                reloading = true;
+                Reload();
+            }
         }
     }
-    
+
     public bool AddAmmo(int bullets)
     {
         bool useItem = false;
@@ -77,16 +96,21 @@ public class Shooter : MonoBehaviour
     }
 
     #region SHOOT && RELOAD
-    void Shoot()
+    void Shoot(Vector3 bulletSpreadDirection)
     {
+        InstantiateBulletAndShell(bulletSpreadDirection);
+
         Fire();
+        
         if (cartridgeAmmo == 1)
         {
             cartridgeAmmo = 0;
             cartridgeTxt.text = cartridgeAmmo.ToString();
-            reloading = true;
-            //we want to let the fire clip to sound before start the reloading one
-            Invoke("Reload", 0.9f);
+            if (totalAmmunition > 0)
+            {
+                //we want to let the fire clip to sound before start the reloading one
+                Invoke("Reload", 0.9f);
+            }
         }
         else
         {
@@ -101,33 +125,48 @@ public class Shooter : MonoBehaviour
         gunAudioSource.Play();
     }
 
-    void Reload()
+    void InstantiateBulletAndShell(Vector3 bulletSpreadDirection)
     {
-        if (totalAmmunition > 0)
-        {
-            reloading = true;
-            gunAudioSource.clip = reloadSound;
-            gunAudioSource.Play();
+        GameObject bullet = GameObject.Instantiate(bulletPrefab, gunEnd.position, gunEnd.rotation);
+        bullet.transform.Rotate(Vector3.left * 90);
+        bullet.GetComponent<Rigidbody>().AddForce(bulletSpreadDirection * 10000);
 
-            //The reloading sound takes almost 3 seconds to complete
-            Invoke("UpdateAmmo", 1.5f);
-            Invoke("StopReloading", 3f);
-        }
+        GameObject shell = GameObject.Instantiate(shellPrefab, shellEject.position, shellEject.rotation);
+        shell.transform.Rotate(Vector3.left * 90);
+        shell.GetComponent<Rigidbody>().AddForce(-shellEject.transform.right * 150);
+        Destroy(shell, 1f);
     }
 
-    void UpdateAmmo()
+    void Reload()
     {
-        int bulletsNeeded = 30 - cartridgeAmmo;
-        cartridgeAmmo = totalAmmunition >= 30 ? cartridgeAmmo += bulletsNeeded : totalAmmunition;
-        totalAmmunition = Mathf.Clamp(totalAmmunition - bulletsNeeded, 0, maxAmmunition);
+        reloadingTxt.enabled = true;
+        reloading = true;
+        gunAudioSource.clip = reloadSound;
+        gunAudioSource.Play();
 
-        cartridgeTxt.text = cartridgeAmmo.ToString();
-        totalAmmunitionTxt.text = totalAmmunition.ToString();
+        //The reloading sound takes almost 3 seconds to complete
+        Invoke("StopReloading", 3f);
     }
 
     void StopReloading()
     {
+        int bulletsNeeded = cartridgeCapacity - cartridgeAmmo;
+        cartridgeAmmo = totalAmmunition >= cartridgeCapacity ? cartridgeAmmo += bulletsNeeded : totalAmmunition;
+        totalAmmunition = Mathf.Clamp(totalAmmunition - bulletsNeeded, 0, maxAmmunition);
+
+        cartridgeTxt.text = cartridgeAmmo.ToString();
+        totalAmmunitionTxt.text = totalAmmunition.ToString();
+
+        reloadingTxt.enabled = false;
         reloading = false;
+    }
+
+    IEnumerator bulletImpactEffect(Vector3 impactPoint)
+    {
+        ParticleSystem impactEffect = GameObject.Instantiate(bulletImpact, impactPoint, Quaternion.Euler(0,0,0));
+        impactEffect.Play();
+        yield return new WaitForSeconds(0.1f);
+        impactEffect.Stop();
     }
     #endregion
 }

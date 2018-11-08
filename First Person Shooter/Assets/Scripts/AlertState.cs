@@ -6,6 +6,7 @@ public class AlertState : IEnemyState
 {
     EnemyAI myEnemy;
     float currentRotationTime = 0;
+    Transform target;
 
 
     public AlertState(EnemyAI enemy)
@@ -43,6 +44,7 @@ public class AlertState : IEnemyState
 
     public void OnTriggerStay(Collider col)
     {
+        target = col.transform;
     }
 
     public void UpdateState()
@@ -51,20 +53,36 @@ public class AlertState : IEnemyState
 
         myEnemy.transform.rotation *= Quaternion.Euler(0f, Time.deltaTime * 360 * 1.0f / myEnemy.rotationTime, 0f);
 
-        if(currentRotationTime > myEnemy.rotationTime)
+        if (currentRotationTime > myEnemy.rotationTime)
         {
             currentRotationTime = 0;
             GoToPatrolState();
         }
         else
         {
-            RaycastHit hit;
-            if(Physics.Raycast(new Ray(new Vector3(myEnemy.transform.position.x, myEnemy.transform.position.y - 0.6f, myEnemy.transform.position.z), myEnemy.transform.forward * 100f), out hit))
+            if (target != null)
             {
-                if(hit.collider.gameObject.tag == "Player")
+                RaycastHit hit;
+
+                //Get the angle X at wich the drone should be looking to hit us, and apply it to it's rotation 
+                //Otherwise, if we are at a different height than the drone, it would never detect us.
+                //Example: If the drone is upstairs and we are downstairs, the dron need to be looking for us in the correct angle 
+                Vector3 lookDirection = target.position - myEnemy.transform.position;
+                Quaternion rot = Quaternion.LookRotation(lookDirection);
+                float angleX = rot.eulerAngles.x;
+                myEnemy.transform.rotation = Quaternion.Euler(rot.eulerAngles.x, myEnemy.transform.rotation.eulerAngles.y, myEnemy.transform.rotation.eulerAngles.z);
+                
+                Ray ray = new Ray(myEnemy.transform.position, myEnemy.transform.forward * 100);
+                //Debug.DrawRay(myEnemy.transform.position, myEnemy.transform.forward * 100);
+                if (Physics.Raycast(ray, out hit))
                 {
-                    GoToAttackState();
+                    if (hit.collider.gameObject.tag == "Player")
+                    {
+                        target = null;
+                        GoToAttackState();
+                    }
                 }
+                
             }
             currentRotationTime += Time.deltaTime;
         }

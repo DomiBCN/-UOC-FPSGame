@@ -40,20 +40,24 @@ public class AttackState : IEnemyState
 
     public void OnTriggerStay(Collider col)
     {
+        
         Vector3 lookDirection = col.transform.position - myEnemy.transform.position;
 
-        myEnemy.transform.rotation = Quaternion.FromToRotation(Vector3.forward, new Vector3(lookDirection.x, 0, lookDirection.z));
-
+        myEnemy.transform.rotation = Quaternion.FromToRotation(Vector3.forward, lookDirection);
         if (actualTimeBetweenShoots > myEnemy.timeBetweenShoots)
         {
             RaycastHit hit;
-
-            if (Physics.Raycast(new Ray(new Vector3(myEnemy.transform.position.x, myEnemy.transform.position.y - 0.6f, myEnemy.transform.position.z), myEnemy.transform.forward * 100f), out hit))
+            Ray ray = new Ray(myEnemy.transform.position, myEnemy.transform.forward * 100f);
+            Debug.DrawRay(myEnemy.transform.position, myEnemy.transform.forward * 100);
+            if (Physics.Raycast(ray, out hit))
             {
-                myEnemy.fireAudio.Play();
+                myEnemy.ExecuteCoroutine(ShootLaser(hit.point));
+
+                myEnemy.laserAudio.Play();
                 if (hit.collider.gameObject.tag == "Player")
                 {
-                    col.gameObject.GetComponent<PlayerHealth>().Hit(myEnemy.damageForce);
+                    var phealth = col.gameObject.GetComponent<PlayerHealth>();
+                    if(phealth != null) phealth.Hit(myEnemy.damageForce);
                 }
                 else
                 {
@@ -72,5 +76,16 @@ public class AttackState : IEnemyState
     {
         myEnemy.myLight.color = Color.red;
         actualTimeBetweenShoots += Time.deltaTime;
+    }
+
+    IEnumerator ShootLaser(Vector3 hitPosition)
+    {
+        myEnemy.laser.enabled = true;
+        myEnemy.laser.SetPosition(0, myEnemy.transform.position);
+        myEnemy.laser.SetPosition(1, hitPosition);
+        myEnemy.laserImpactLight.enabled = true;
+        yield return new WaitForSeconds(0.2f);
+        myEnemy.laserImpactLight.enabled = false;
+        myEnemy.laser.enabled = false;
     }
 }

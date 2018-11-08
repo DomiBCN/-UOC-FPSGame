@@ -18,10 +18,14 @@ public class EnemyAI : MonoBehaviour {
     public float timeBetweenShoots = 1.0f;
     public float damageForce = 10f;
     public float rotationTime = 3.0f;
-    public float shootHeight = 0.5f;
     public Transform[] wayPoints;
     public GameObject decalPrefab;
-    public AudioSource fireAudio;
+    public AudioSource laserAudio;
+    
+    [Header("Laser")]
+    //glow effect when the enemy laser hit us
+    public Light laserImpactLight;
+    public LineRenderer laser;
 
     // Use this for initialization
     void Start () {
@@ -39,7 +43,11 @@ public class EnemyAI : MonoBehaviour {
 	void Update () {
         currentState.UpdateState();
 
-        if (life < 0) Destroy(this.gameObject);
+        if (life < 0)
+        {
+            laserImpactLight.enabled = false;
+            Destroy(this.gameObject);
+        }
 	}
 
     public void Hit(float damage)
@@ -66,5 +74,11 @@ public class EnemyAI : MonoBehaviour {
     private void OnTriggerExit(Collider other)
     {
         currentState.OnTriggerExit(other);
+    }
+
+    //to execute State coroutines
+    public void ExecuteCoroutine(IEnumerator functionToRun)
+    {
+        StartCoroutine(functionToRun);
     }
 }

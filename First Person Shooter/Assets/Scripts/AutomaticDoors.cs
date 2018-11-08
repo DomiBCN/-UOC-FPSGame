@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class AutomaticDoors : MonoBehaviour {
-    
+public class AutomaticDoors : MonoBehaviour
+{
+
     public Transform rightDoor;
     public Transform rightDoorOpened;
     public Transform rightDoorClosed;
@@ -17,14 +18,15 @@ public class AutomaticDoors : MonoBehaviour {
     bool isClosing;
 
     Vector3 distance;
-    
-	// Update is called once per frame
-	void Update () {
-		if(isOpening)
+
+    // Update is called once per frame
+    void Update()
+    {
+        if (isOpening)
         {
             distance = leftDoor.localPosition - leftDoorOpened.localPosition;
 
-            if(distance.magnitude < 0.001f)
+            if (distance.magnitude < 0.001f)
             {
                 isOpening = false;
                 leftDoor.localPosition = leftDoorOpened.localPosition;
@@ -52,23 +54,32 @@ public class AutomaticDoors : MonoBehaviour {
                 rightDoor.localPosition = Vector3.Lerp(rightDoor.localPosition, rightDoorClosed.localPosition, speed * Time.deltaTime);
             }
         }
-	}
+    }
 
     private void OnTriggerEnter(Collider other)
     {
-        isOpening = true;
-        isClosing = false;
+        if (other.gameObject.tag == "Player" || other.gameObject.tag == "Enemy")
+        {
+            isOpening = true;
+            isClosing = false;
+        }
     }
 
     private void OnTriggerStay(Collider other)
     {
-        isOpening = true;
-        isClosing = false;
+        if (other.gameObject.tag == "Player" || other.gameObject.tag == "Enemy")
+        {
+            isOpening = true;
+            isClosing = false;
+        }
     }
 
     private void OnTriggerExit(Collider other)
     {
-        isOpening = false;
-        isClosing = true;
+        if (other.gameObject.tag == "Player" || other.gameObject.tag == "Enemy")
+        {
+            isOpening = false;
+            isClosing = true;
+        }
     }
 }
