@@ -1,14 +1,19 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using UnityStandardAssets.Characters.FirstPerson;
 
-public class PlayerHealth : MonoBehaviour {
+public class PlayerHealth : MonoBehaviour
+{
 
     public Text shieldTxt;
     public Text lifeTxt;
     public Slider shieldSlider;
     public Slider lifeSlider;
+    public Text GameOverTxt;
+    public Text RestartTxt;
 
     float life = 150;
     float shield = 5;
@@ -23,11 +28,22 @@ public class PlayerHealth : MonoBehaviour {
         shieldSlider.value = shield;
         lifeSlider.value = life;
     }
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
+
+    // Update is called once per frame
+    void Update()
+    {
+        if (life == 0)
+        {
+            GameOverTxt.enabled = true;
+            RestartTxt.enabled = true;
+            gameObject.GetComponent<FirstPersonController>().EndGame();
+        }
+
+        if (Input.GetKeyDown(KeyCode.Escape) && life == 0)
+        {
+            Restart();
+        }
+    }
 
     public void Hit(float damage)
     {
@@ -55,7 +71,7 @@ public class PlayerHealth : MonoBehaviour {
         }
 
     }
-    
+
     //If life or ammo are already at his maximum, do not get the items
     public bool AddLife(float lifePlus)
     {
@@ -81,5 +97,10 @@ public class PlayerHealth : MonoBehaviour {
             shieldTxt.text = shield.ToString();
         }
         return useItem;
+    }
+
+    void Restart()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 }

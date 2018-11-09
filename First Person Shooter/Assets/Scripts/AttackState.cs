@@ -40,35 +40,37 @@ public class AttackState : IEnemyState
 
     public void OnTriggerStay(Collider col)
     {
-        
-        Vector3 lookDirection = col.transform.position - myEnemy.transform.position;
-
-        myEnemy.transform.rotation = Quaternion.FromToRotation(Vector3.forward, lookDirection);
-        if (actualTimeBetweenShoots > myEnemy.timeBetweenShoots)
+        if (!myEnemy.selfDestroying)
         {
-            RaycastHit hit;
-            Ray ray = new Ray(myEnemy.transform.position, myEnemy.transform.forward * 100f);
-            Debug.DrawRay(myEnemy.transform.position, myEnemy.transform.forward * 100);
-            if (Physics.Raycast(ray, out hit))
+            Vector3 lookDirection = col.transform.position - myEnemy.transform.position;
+
+            myEnemy.transform.rotation = Quaternion.FromToRotation(Vector3.forward, lookDirection);
+            if (actualTimeBetweenShoots > myEnemy.timeBetweenShoots)
             {
-                myEnemy.ExecuteCoroutine(ShootLaser(hit.point));
+                RaycastHit hit;
+                Ray ray = new Ray(myEnemy.transform.position, myEnemy.transform.forward * 100f);
+                Debug.DrawRay(myEnemy.transform.position, myEnemy.transform.forward * 100);
+                if (Physics.Raycast(ray, out hit))
+                {
+                    myEnemy.ExecuteCoroutine(ShootLaser(hit.point));
 
-                myEnemy.laserAudio.Play();
-                if (hit.collider.gameObject.tag == "Player")
-                {
-                    var phealth = col.gameObject.GetComponent<PlayerHealth>();
-                    if(phealth != null) phealth.Hit(myEnemy.damageForce);
+                    myEnemy.laserAudio.Play();
+                    if (hit.collider.gameObject.tag == "Player")
+                    {
+                        var phealth = col.gameObject.GetComponent<PlayerHealth>();
+                        if (phealth != null) phealth.Hit(myEnemy.damageForce);
+                    }
+                    else
+                    {
+                        myEnemy.DestroyQuad();
+                        myEnemy.totalDecals[myEnemy.actual_decal] = GameObject.Instantiate(myEnemy.decalPrefab, hit.point + hit.normal * 0.01f, Quaternion.FromToRotation(Vector3.forward, -hit.normal), hit.collider.gameObject.transform);
+                        myEnemy.actual_decal++;
+                        if (myEnemy.actual_decal == 10) myEnemy.actual_decal = 0;
+                    }
                 }
-                else
-                {
-                    myEnemy.DestroyQuad();
-                    myEnemy.totalDecals[myEnemy.actual_decal] = GameObject.Instantiate(myEnemy.decalPrefab, hit.point + hit.normal * 0.01f, Quaternion.FromToRotation(Vector3.forward, -hit.normal), hit.collider.gameObject.transform);
-                    myEnemy.actual_decal++;
-                    if (myEnemy.actual_decal == 10) myEnemy.actual_decal = 0;
-                }
+                actualTimeBetweenShoots = 0;
+
             }
-            actualTimeBetweenShoots = 0;
-
         }
     }
 
@@ -81,11 +83,13 @@ public class AttackState : IEnemyState
     IEnumerator ShootLaser(Vector3 hitPosition)
     {
         myEnemy.laser.enabled = true;
+        myEnemy.laserGunParticles.Play();
         myEnemy.laser.SetPosition(0, myEnemy.transform.position);
         myEnemy.laser.SetPosition(1, hitPosition);
         myEnemy.laserImpactLight.enabled = true;
         yield return new WaitForSeconds(0.2f);
         myEnemy.laserImpactLight.enabled = false;
         myEnemy.laser.enabled = false;
+        myEnemy.laserGunParticles.Stop();
     }
 }

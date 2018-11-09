@@ -57,7 +57,7 @@ public class Shooter : MonoBehaviour
             Shoot(bulletSpreadDirection);
             if (Physics.Raycast(raySpread, out hit))
             {
-                StartCoroutine(bulletImpactEffect(hit.point));
+                bulletImpactEffect(hit);
 
                 if (hit.collider.gameObject.tag == "Enemy")
                 {
@@ -129,6 +129,7 @@ public class Shooter : MonoBehaviour
     {
         GameObject bullet = GameObject.Instantiate(bulletPrefab, gunEnd.position, gunEnd.rotation);
         bullet.transform.Rotate(Vector3.left * 90);
+        bullet.GetComponent<ParticleSystem>().Play();
         bullet.GetComponent<Rigidbody>().AddForce(bulletSpreadDirection * 10000);
 
         GameObject shell = GameObject.Instantiate(shellPrefab, shellEject.position, shellEject.rotation);
@@ -161,12 +162,11 @@ public class Shooter : MonoBehaviour
         reloading = false;
     }
 
-    IEnumerator bulletImpactEffect(Vector3 impactPoint)
+    void bulletImpactEffect(RaycastHit impact)
     {
-        ParticleSystem impactEffect = GameObject.Instantiate(bulletImpact, impactPoint, Quaternion.Euler(0,0,0));
+        ParticleSystem impactEffect = GameObject.Instantiate(bulletImpact, impact.point, Quaternion.Euler(0,0,0));
         impactEffect.Play();
-        yield return new WaitForSeconds(0.1f);
-        impactEffect.Stop();
     }
     #endregion
+
 }
